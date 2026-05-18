@@ -1,0 +1,32 @@
+exp_name: mevid_searchcop
+dataset:
+  name: MEVID
+  root: ./data/MEVID
+  split: test
+  num_query: 1000
+
+agent:
+  llm_model: gpt-4o
+  temperature: 0.2
+  max_tokens: 1024
+  max_steps: 8
+  confidence_threshold: 0.85
+  self_correct: true
+
+tools:
+  - gait_encode
+  - reid_encode
+  - vlm_caption        # TODO
+  - spatio_temporal_filter  # TODO
+  - quality_score      # TODO
+  - faiss_search       # TODO
+
+cache:
+  dir: cache/llm
+  enabled: true
+
+metrics:
+  - person_map
+  - cmc_at_k
+  - reasoning_faithfulness
+  - tool_call_efficiency

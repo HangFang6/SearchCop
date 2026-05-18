@@ -1,0 +1,16 @@
+exp_name: mevid_baseline
+dataset:
+  name: MEVID
+  root: ./data/MEVID
+  split: test
+  num_query: 1000
+
+retrieval:
+  method: gait_reid_fusion        # classical baseline (no Agent)
+  topk: 100
+  faiss_index: faiss_indexes/mevid_baseline.faiss
+
+metrics:
+  - person_map
+  - cmc_at_k
+  - tool_call_efficiency

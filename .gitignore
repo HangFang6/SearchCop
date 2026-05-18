@@ -1,0 +1,68 @@
+# --- Python ---
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+.pytest_cache/
+.ipynb_checkpoints/
+*.egg-info/
+build/
+dist/
+
+# --- Environments ---
+.venv/
+venv/
+env/
+.env
+.env.local
+
+# --- IDE ---
+.vscode/
+.idea/
+*.swp
+.DS_Store
+
+# --- Secrets (NEVER COMMIT) ---
+*.key
+*api_key*
+*OPENAI_API_KEY*
+secrets/
+config/local.yaml
+
+# --- Large artifacts ---
+results/**/*.pkl
+results/**/*.npy
+results/**/*.npz
+results/**/checkpoints/
+results/**/predictions/
+logs/
+cache/
+*.log
+*.faiss
+
+# --- Datasets (never commit raw data) ---
+data/raw/
+data/MEVID/
+data/PRCC/
+data/LTCC/
+data/MARS/
+data/DukeMTMC-VideoReID/
+data/**/*.mp4
+data/**/*.avi
+data/**/images/
+
+# --- Model weights ---
+weights/
+*.pth
+*.pt
+*.bin
+*.ckpt
+*.onnx
+*.engine
+
+# --- Keep ---
+!results/.gitkeep
+!results/summary/
+!docs/figures/
+!paper/figures/

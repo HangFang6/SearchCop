@@ -1,0 +1,79 @@
+name: searchcop
+channels:
+  - pytorch
+  - nvidia
+  - conda-forge
+  - defaults
+
+dependencies:
+  - python=3.10
+  - pip
+  # ----- Core scientific -----
+  - numpy=1.26.*
+  - scipy=1.11.*
+  - pandas=2.2.*
+  - scikit-learn=1.4.*
+  - tqdm
+  - pyyaml
+  - rich
+
+  # ----- PyTorch (H20 / CUDA 12.x) -----
+  # NOTE on H20: install via pip below to match driver version exactly
+  # - pytorch>=2.2  (installed via pip)
+  # - torchvision  (installed via pip)
+
+  # ----- CV -----
+  - opencv=4.9.*
+  - pillow
+
+  # ----- DB / FAISS -----
+  - faiss-gpu=1.7.4
+  - pymysql
+
+  # ----- Dev / test -----
+  - pytest
+  - pytest-mock
+  - ipython
+  - jupyter
+
+  - pip:
+      # ----- Torch stack (pin once you confirm remote CUDA) -----
+      - torch==2.2.2
+      - torchvision==0.17.2
+
+      # ----- LLM Agent stack -----
+      - openai>=1.30.0
+      - tiktoken
+      - tenacity            # retry / backoff for API calls
+      - diskcache           # local cache for GPT-4o responses (cost control)
+      - jinja2              # prompt templating
+      - pydantic>=2.0
+      - python-dotenv
+
+      # ----- Vision / SAM / CLIP / OpenGait deps -----
+      - segment-anything
+      - ftfy
+      - regex
+      - timm==0.9.16
+      - einops
+      - yacs
+
+      # ----- Eval / vis -----
+      - matplotlib
+      - seaborn
+      - tabulate
+      - openpyxl
+
+      # ----- API / serving (reuse from Gait-Project) -----
+      - fastapi
+      - uvicorn[standard]
+      - python-multipart
+
+      # ----- Datasets / metrics helpers -----
+      - lap
+      - filterpy
+      - motmetrics
+
+      # ----- Optional: local LLM fallback -----
+      # - vllm                # uncomment on remote if you want to host OSS LLM
+      # - transformers>=4.40
