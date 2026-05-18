@@ -1,6 +1,128 @@
-% Day 10: Related Work
-% Source material: docs/related_work.md
+% =====================================================================
+% Related Work (CVPR style, ~1 column, 4 subsections)
+% Each subsection ends with one sentence that states the gap and how
+% SearchCop addresses it. The final paragraph contrasts SearchCop with
+% the closest tool-using vision-language agents.
+% =====================================================================
 \section{Related Work}
 \label{sec:related}
 
-\todo{draft Day 10 — sections: video Re-ID; multi-camera person search; clothing-change Re-ID; gait recognition; LLM agents \& tool use; vision-language video models; agent benchmarks.}
+\subsection{Video Re-Identification}
+\label{ssec:rel_videoreid}
+The dominant body of work on person retrieval treats the problem as
+representation learning over single-camera tracklets. Image-level methods
+such as TransReID~\cite{he2021transreid} and CLIP-ReID~\cite{li2023clipreid}
+introduced strong transformer or vision-language pretraining backbones,
+while video-level methods such as AP3D~\cite{gu2020ap3d},
+GRL~\cite{liu2021grl}, and STMN~\cite{eom2021stmn} aggregate temporal
+information through 3D convolutions, attention, or memory-based pooling.
+Standard benchmarks include MARS~\cite{zheng2016mars} and
+DukeMTMC-VideoReID~\cite{wu2018duke}; both fix the gallery to a single
+modality and assume the system retrieves Top-$K$ in one shot.
+\textbf{Gap.} These approaches optimize a single similarity function and
+deliver no \emph{decision policy}: the system cannot, for example, decide
+to switch modality when the query is occluded, nor explain why a Top-1
+prediction was chosen. \method{} preserves these encoders as
+\emph{tools} but lifts modality selection and aggregation into an explicit
+LLM-driven plan.
+
+\subsection{Multi-Camera Person Search and Spatio-Temporal Reasoning}
+\label{ssec:rel_mcps}
+Multi-camera person search jointly tackles detection and re-identification
+across multiple cameras, with PRW~\cite{zheng2017prw} and
+CUHK-SYSU~\cite{xiao2017cuhksysu} as canonical benchmarks; recent
+MEVID~\cite{davila2023mevid} explicitly targets multi-environment,
+long-time-span video. A handful of works exploit
+\emph{spatio-temporal} priors -- camera topology, transit-time histograms,
+or graph propagation -- to refine retrieval~\cite{lv2018global,wang2019stp}.
+Yet, both lines treat each gallery item independently and never plan a
+\emph{sequence} of retrieval actions; topology, when used at all, is
+applied as a fixed post-filter rather than a tool the system can choose
+to invoke. \textbf{Gap.} The decision of \emph{when} to consult topology,
+\emph{which} encoder to apply, and \emph{whether} the answer is good
+enough is left to manual heuristics. \method{} promotes each of these
+decisions to first-class actions in an LLM agent's tool space.
+
+\subsection{Clothing-Change Re-ID and Gait Recognition}
+\label{ssec:rel_cc_gait}
+When clothing changes between camera views, appearance-based features
+become unreliable. Two complementary lines emerged. (i) Clothing-aware
+representation learning, exemplified by CAL~\cite{gu2022cal} on
+PRCC~\cite{yang2019prcc} and LTCC~\cite{qian2020ltcc}, learns features
+adversarially insensitive to clothes. (ii) Gait recognition exploits
+walking dynamics rather than appearance: GaitSet~\cite{chao2019gaitset},
+GaitPart~\cite{fan2020gaitpart}, and the OpenGait
+family~\cite{fan2023opengait} demonstrate strong cross-view performance
+on silhouette inputs. Both lines, however, presume an \emph{a priori}
+choice of modality at indexing time, and offline late fusion
+typically falls back to fixed weighted sums.
+\textbf{Gap.} Real surveillance queries rarely come with a clean modality
+hint -- a frontal occluded crop calls for Re-ID, a clean back-view
+tracklet calls for gait. \method{} keeps both encoders as on-demand
+tools and lets the Planner decide which one to trust per query, with the
+Critic invalidating the call when modality disagreement is detected.
+
+\subsection{LLM Agents and Tool Use}
+\label{ssec:rel_agents}
+Tool-using LLM agents are a fast-growing line of work originating from
+ReAct~\cite{yao2023react} and Toolformer~\cite{schick2023toolformer},
+which interleave reasoning and acting via natural-language traces and
+self-supervised tool annotation, respectively. Building on these,
+HuggingGPT~\cite{shen2023hugginggpt} orchestrates Hugging Face models for
+multi-modal tasks; Visual Programming~\cite{gupta2023visprog} and
+Chameleon~\cite{lu2023chameleon} compose vision tools into programs for
+single-image VQA and reasoning. Beyond, AgentBench~\cite{liu2024agentbench}
+and ToolBench~\cite{qin2024toolbench} measure agent capability on coding,
+web, and API tasks. \textbf{Gap.} Existing agent benchmarks focus on
+\emph{capability} (can the agent solve a task?) rather than
+\emph{retrieval faithfulness} (does the agent's reasoning match its tool
+output?), and none of these systems tackle large-scale multi-camera
+gallery retrieval. \method{} adapts the tool-using paradigm to person
+search and additionally proposes \emph{Reasoning Faithfulness} and
+\emph{Tool-call Efficiency} as new evaluation primitives that future
+agent-based retrieval systems can adopt.
+
+\subsection{Vision-Language Agents for Video and Surveillance}
+\label{ssec:rel_vlmagents}
+Recent video-centric multimodal LLMs such as
+VideoChat~\cite{li2023videochat}, Video-LLaMA~\cite{zhang2023videollama},
+Video-ChatGPT~\cite{maaz2023videochatgpt}, and
+TimeChat~\cite{ren2024timechat} push LLMs to understand long videos via
+captioning or temporal QA. Closer to retrieval, AssistGPT~\cite{gao2023assistgpt}
+plans modality-specific calls for video QA, and a small literature on
+LLM-driven surveillance studies anomaly description. \textbf{Gap.} These
+systems address \emph{describing} or \emph{answering questions about} a
+single video, not \emph{searching} a multi-camera gallery for the
+\emph{same person} under spatial-temporal constraints; they also have no
+notion of self-correcting retrieval. To our knowledge, \method{} is the
+first LLM agent that targets this exact problem.
+
+\paragraph{Positioning.} Table~\ref{tab:positioning} contrasts \method{}
+with the most relevant prior work along five axes: multi-camera support,
+gait+Re-ID modality fusion, explicit decision making, interpretable
+output, and evaluation on MEVID. \method{} is the first system to be
+positive on all five.
+
+\begin{table*}[t]
+\centering
+\small
+\caption{Positioning of \method{} against representative prior work.
+\textbullet\ = supported, $\circ$ = partial, blank = unsupported.}
+\label{tab:positioning}
+\begin{tabular}{lccccc}
+\toprule
+Method & Multi-cam & Modality fusion & Decision making & Interpretable & MEVID eval \\
+\midrule
+TransReID~\cite{he2021transreid}              & $\circ$ &        &        &        &        \\
+CLIP-ReID~\cite{li2023clipreid}                & $\circ$ & text aux &      & $\circ$ &        \\
+CAL~\cite{gu2022cal} (clothing-change)         &         & clothes-aware &    &        &        \\
+OpenGait~\cite{fan2023opengait} family         &         & gait only &      &        &        \\
+HuggingGPT~\cite{shen2023hugginggpt}           &         & LLM-tool & \textbullet & \textbullet &  \\
+Visual Programming~\cite{gupta2023visprog}     &         & LLM-tool & \textbullet & \textbullet &  \\
+Chameleon~\cite{lu2023chameleon}               &         & LLM-tool & \textbullet & \textbullet &  \\
+AssistGPT~\cite{gao2023assistgpt}              & $\circ$ & LLM-tool & \textbullet & \textbullet &  \\
+\midrule
+\textbf{\method{} (ours)} & \textbullet & gait+Re-ID+VLM & \textbullet & \textbullet & \textbullet \\
+\bottomrule
+\end{tabular}
+\end{table*}
