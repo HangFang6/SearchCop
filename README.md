@@ -72,7 +72,8 @@ pytest tests/ -v          # all tests use mock LLM, runnable on CPU
 ssh user@h20-server
 git clone <private-repo-url> SearchCop && cd SearchCop
 bash scripts/setup_remote.sh
-export OPENAI_API_KEY=sk-...
+cp .env.example .env                          # Doubao credentials pre-filled
+python -m scripts.test_doubao_conn --tier lite
 bash scripts/run_exp_mevid_baseline.sh
 ```
 

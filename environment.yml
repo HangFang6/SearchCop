@@ -41,11 +41,10 @@ dependencies:
       - torch==2.2.2
       - torchvision==0.17.2
 
-      # ----- LLM Agent stack -----
-      - openai>=1.30.0
-      - tiktoken
-      - tenacity            # retry / backoff for API calls
-      - diskcache           # local cache for GPT-4o responses (cost control)
+      # ----- LLM Agent stack (Doubao tRPC gateway, NOT OpenAI) -----
+      - requests>=2.31.0    # HMAC-signed POST to data_eval gateway
+      - tenacity            # retry / backoff
+      - diskcache           # local cache for LLM responses (cost control)
       - jinja2              # prompt templating
       - pydantic>=2.0
       - python-dotenv

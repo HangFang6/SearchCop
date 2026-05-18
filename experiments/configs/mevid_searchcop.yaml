@@ -6,9 +6,12 @@ dataset:
   num_query: 1000
 
 agent:
-  llm_model: gpt-4o
+  llm_planner_tier: pro       # doubao-seed-2-0-pro-260215
+  llm_critic_tier: pro
+  llm_aggregator_tier: lite   # doubao-seed-2-0-lite-260215 (cheap)
   temperature: 0.2
   max_tokens: 1024
+  reasoning_effort: medium
   max_steps: 8
   confidence_threshold: 0.85
   self_correct: true

@@ -1,0 +1,24 @@
+exp_name: mock_smoke
+dataset:
+  name: MOCK
+  num_query: 5
+
+agent:
+  llm_planner_tier: pro
+  llm_critic_tier: pro
+  llm_aggregator_tier: lite
+  temperature: 0.2
+  max_tokens: 512
+  reasoning_effort: medium
+  max_steps: 4
+  confidence_threshold: 0.85
+
+tools:
+  - gait_encode
+  - reid_encode
+  - faiss_search
+  - multivector_rerank
+  - vlm_caption
+  - spatio_temporal_filter
+  - quality_score
+  - evidence_fuse

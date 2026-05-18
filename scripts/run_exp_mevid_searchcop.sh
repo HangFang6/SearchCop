@@ -9,8 +9,8 @@ set -a
 [ -f .env ] && source .env
 set +a
 
-if [ -z "${OPENAI_API_KEY:-}" ]; then
-    echo "[ERR] OPENAI_API_KEY not set. Edit .env first." >&2
+if [ -z "${DOUBAO_APP_ID:-}" ] || [ -z "${DOUBAO_APP_KEY:-}" ]; then
+    echo "[ERR] DOUBAO_APP_ID / DOUBAO_APP_KEY not set. Run: cp .env.example .env" >&2
     exit 1
 fi
 

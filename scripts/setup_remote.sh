@@ -34,19 +34,11 @@ python -c "import torch; print('torch:', torch.__version__, 'cuda:', torch.cuda.
 mkdir -p weights results logs cache data
 touch results/.gitkeep
 
-# --- 5. .env template ---
+# --- 5. .env hint ---
 if [ ! -f .env ]; then
-    cat > .env.example <<'EOF'
-# Copy to .env and fill in
-OPENAI_API_KEY=sk-xxxx
-OPENAI_BASE_URL=https://api.openai.com/v1
-MYSQL_HOST=localhost
-MYSQL_PORT=3306
-MYSQL_USER=root
-MYSQL_PASSWORD=
-MYSQL_DB=searchcop
-EOF
-    echo "[*] Generated .env.example — copy to .env and fill in."
+    if [ -f .env.example ]; then
+        echo "[*] .env not found. Run: cp .env.example .env  (Doubao credentials are pre-filled)"
+    fi
 fi
 
 echo ""

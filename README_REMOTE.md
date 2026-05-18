@@ -27,13 +27,27 @@ cd SearchCop
 bash scripts/setup_remote.sh
 
 # 1.3 Configure secrets (NEVER COMMIT)
+#     The committed .env.example contains placeholders only.
+#     Get the real Doubao credentials from your private template
+#     stored OUTSIDE the repo (e.g. fh_gait/searchcop_env_template.txt
+#     on your laptop). scp it to the remote, or paste into .env directly.
 cp .env.example .env
-vim .env                     # fill OPENAI_API_KEY and MYSQL creds
+vim .env                                      # fill DOUBAO_APP_ID / DOUBAO_APP_KEY
 
-# 1.4 Sanity test (mock LLM, no API call)
+# 1.4 Sanity test (mock LLM, no real call)
 conda activate searchcop
 pytest tests/ -v
+
+# 1.5 Real-call connectivity test against the Doubao gateway
+python -m scripts.test_doubao_conn --tier lite
+python -m scripts.test_doubao_conn --tier pro
+# Expected: [PASS] Doubao gateway is reachable.
 ```
+
+> **Note**: The Doubao gateway lives at `http://trpc-gpt-eval.production.polaris:8080`.
+> It is reachable from inside the company intranet (H20 server), but **not** from
+> your home laptop. So all real LLM calls happen on the remote — local dev runs
+> in mock mode only (which is what `pytest tests/ -v` exercises).
 
 ---
 
@@ -118,5 +132,7 @@ rsync -avz user@h20:~/SearchCop/results/summary/ ./results/summary/
 |---|---|
 | `faiss-gpu` import fails | Reinstall matching CUDA: `conda install -c pytorch faiss-gpu=1.7.4` |
 | `torch.cuda.is_available()` False | Re-export `CUDA_VISIBLE_DEVICES` after SSH reconnect |
-| OpenAI rate limit | `cache/` will retry with exponential backoff (tenacity) |
+| OpenAI rate limit | N/A — we use Doubao gateway. If 429: `cache/` will retry via tenacity backoff |
+| Doubao 4xx auth error | Check `DOUBAO_APP_ID` / `DOUBAO_APP_KEY` in `.env`; UTC time skew on host can break HMAC |
+| Doubao timeout | Off-VPN / off-intranet. Try `curl http://trpc-gpt-eval.production.polaris:8080` |
 | Out of memory on H20 | Reduce `batch_size` in `experiments/configs/*.yaml` |
