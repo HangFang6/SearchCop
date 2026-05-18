@@ -1,0 +1,123 @@
+% =====================================================================
+% Introduction (CVPR style, 5 paragraphs, ~1 column)
+% Structure:
+%   P1. Motivation: why multi-camera person search matters in the wild.
+%   P2. Gap: classical pipelines are single-shot, modality-fixed, and
+%       opaque; clothing change, occlusion, and cross-camera transit
+%       expose the limit of one-shot matching.
+%   P3. Insight: person search is a multi-step tool-using decision
+%       problem; LLM agents excel at exactly that.
+%   P4. Approach: SearchCop = Planner / Executor / Critic over a tool
+%       library + spatio-temporal prior + self-correcting loop, with
+%       five enumerated contributions.
+%   P5. Results headline + roadmap of the paper.
+% =====================================================================
+\section{Introduction}
+\label{sec:intro}
+
+Locating a person of interest across a network of surveillance cameras is a
+foundational capability for public safety, missing-person investigation,
+and large-scale forensic analysis. In contrast to image-level person
+re-identification (Re-ID), the operational task analysts actually face is
+\emph{multi-camera person search}: given a short query (an image, a video
+clip, or even a textual description), determine \emph{when} and \emph{from
+which camera} the same individual was seen, and return a ranked list of
+candidate tracklets together with an explanation that a human can verify.
+Modern monitoring deployments comprise hundreds of overlapping or sparsely
+connected cameras, and queries arrive with heterogeneous quality: a frontal
+crop here, a back-view tracklet there, sometimes only a witness sentence.
+This setting demands a search system that is not only accurate, but also
+\emph{adaptive}, \emph{cost-aware}, and \emph{auditable}.
+
+The dominant approach today reduces multi-camera search to a single-shot
+feature-matching procedure: encode the query with a Re-ID
+network~\cite{he2021transreid,li2023clipreid} or a gait
+network~\cite{chao2019gaitset,fan2023opengait}, retrieve top-$K$ candidates
+from a fixed-modality FAISS index, and optionally late-fuse the two
+modalities with hand-tuned weights. This recipe ignores three structural
+properties of the problem. First, query quality is highly variable -- the
+right encoder for a clean walking sequence is the wrong encoder for a
+heavily occluded crop, yet existing systems commit to a modality at
+indexing time. Second, multi-camera networks have rich spatio-temporal
+priors: a person seen at camera~A at time $t$ cannot physically appear at
+a non-adjacent camera~B within a few seconds, yet most retrieval pipelines
+discard topology entirely~\cite{davila2023mevid,zheng2017prw}. Third,
+clothing-change benchmarks~\cite{yang2019prcc,qian2020ltcc} reveal that any
+single modality, however carefully fine-tuned, fails on a non-trivial slice
+of queries; the fix is not a stronger encoder, but a \emph{decision
+policy} that knows when to switch.
+
+Our key insight is that multi-camera person search is more naturally cast
+as a \emph{multi-step tool-using decision problem} than as a one-shot
+retrieval problem. Recent advances in tool-using large language model
+(LLM) agents -- from ReAct~\cite{yao2023react} and
+Toolformer~\cite{schick2023toolformer} to Visual
+Programming~\cite{gupta2023visprog} and Chameleon~\cite{lu2023chameleon}
+-- show that LLMs, when given a structured tool library, can plan
+non-trivial sequences of vision/database calls and produce traceable
+rationales. We bring this paradigm to person search. Crucially, the same
+encoders that prior work uses as monolithic pipelines (gait, Re-ID,
+vision-language captioners) become \emph{callable tools} in the LLM's
+action space, and the same camera-topology priors that are usually
+discarded become a \emph{spatio-temporal filter tool}. The LLM's job is
+not to look at pixels: it is to decide \emph{which tool to call next}
+given the current evidence, and to declare \emph{when} the answer is
+trustworthy.
+
+Building on this insight we propose \method, the first LLM agent for
+multi-camera person search. \method{} is built around a Planner /
+Executor / Critic loop driven by a frontier LLM. The Planner emits one
+function call at each step, choosing among $10$ tools that wrap the gait
+encoder, the CLIP-Re-ID encoder, a multi-vector reranker, a vision-language
+captioner, a spatio-temporal filter, a quality scorer, a FAISS coarse
+retriever, and an evidence fuser; the Executor runs the tool and returns a
+typed result; the Critic scores the step's usefulness and the running
+confidence, triggering a \emph{self-correcting} replan whenever
+modalities disagree or confidence stagnates. We evaluate
+\method{} on MEVID~\cite{davila2023mevid}, MARS~\cite{zheng2016mars},
+DukeMTMC-VideoReID~\cite{wu2018duke}, and the clothing-change benchmarks
+PRCC~\cite{yang2019prcc} and LTCC~\cite{qian2020ltcc}, using both standard
+mAP/CMC and three new metrics tailored to agent-based retrieval:
+\emph{Reasoning Faithfulness}, \emph{Tool-call Efficiency}, and
+\emph{Cross-camera Recall}. To summarize, our contributions are:
+
+\begin{itemize}\setlength\itemsep{2pt}
+  \item \textbf{Task reformulation.} We are the first to cast multi-camera
+        person search as a \emph{tool-using LLM agent task}, replacing the
+        prevailing single-shot matching paradigm with an explicit
+        plan--act--criticize loop.
+  \item \textbf{Tool library and schema.} We design a $10$-tool library
+        (gait, Re-ID, VLM caption, spatio-temporal filter, quality scorer,
+        FAISS, multi-vector reranker, evidence fuser, SAM silhouette,
+        track extractor) with strict JSON schemas, so the Planner can
+        compose them safely without function-calling support from the
+        underlying LLM gateway.
+  \item \textbf{Spatio-temporal reasoning prompt.} We integrate the
+        camera-topology graph and time-window prior into the Planner
+        prompt, so the agent prunes physically infeasible candidates
+        before invoking heavy encoders.
+  \item \textbf{Self-correcting agent loop.} We introduce a Critic that
+        outputs a calibrated confidence and a \emph{needs-correction}
+        flag, enabling the system to expand cameras, broaden time
+        windows, or switch encoders when evidence is weak. We further
+        prevent pathological loops with a tool-argument deduplication
+        guard.
+  \item \textbf{New evaluation protocol.} Beyond the standard mAP/CMC, we
+        propose \emph{Reasoning Faithfulness} (alignment between stated
+        rationale and actual tool output) and \emph{Tool-call Efficiency}
+        (average number of calls per correctly answered query), turning
+        the otherwise opaque agent behaviour into a measurable artefact.
+\end{itemize}
+
+Empirically, \method{} achieves \todo{X.X}\% mAP on MEVID, an absolute
+improvement of \todo{$+\Delta$}\% over the strongest hand-tuned
+gait+Re-ID fusion baseline, while also raising rank-1 by \todo{X.X}\% on
+PRCC and LTCC. The agent makes on average \todo{N} tool calls per query,
+\todo{Y}\% of which are validated by the Critic as useful; the resulting
+reasoning chains are rated as faithful by \todo{Z}\% of human evaluators.
+The remainder of the paper is organized as follows.
+Section~\ref{sec:related} reviews video Re-ID, multi-camera person search,
+and tool-using LLM agents. Section~\ref{sec:method} describes the tool
+library, the Planner / Critic prompts, and the self-correcting loop.
+Section~\ref{sec:exp} reports our experiments and ablations. We conclude
+in Section~\ref{sec:conclusion}.

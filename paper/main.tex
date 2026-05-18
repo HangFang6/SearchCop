@@ -1,0 +1,84 @@
+% =====================================================================
+% SearchCop — Multi-Camera Person Search via LLM Agent
+% Target venue: CVPR 2027 (primary) / ICCV 2027 / NeurIPS 2026
+% Build:
+%   pdflatex main.tex
+%   bibtex main
+%   pdflatex main.tex && pdflatex main.tex
+%
+% NOTE: To switch to the official CVPR style:
+%   1. Drop `cvpr.sty` next to this file (from CVPR template release).
+%   2. Replace the \documentclass / \usepackage block below with:
+%        \documentclass[10pt,twocolumn,letterpaper]{article}
+%        \usepackage[review]{cvpr}     % review version
+%      or \usepackage{cvpr}            % camera-ready
+% =====================================================================
+
+\documentclass[10pt,twocolumn,letterpaper]{article}
+
+% ---- generic packages (CVPR template includes most of these) ----
+\usepackage{times}
+\usepackage{epsfig}
+\usepackage{graphicx}
+\usepackage{amsmath}
+\usepackage{amssymb}
+\usepackage{booktabs}
+\usepackage{multirow}
+\usepackage{xcolor}
+\usepackage{url}
+\usepackage[breaklinks=true,bookmarks=false]{hyperref}
+\usepackage{cite}
+
+% Margins (only used until cvpr.sty is dropped in)
+\usepackage[a4paper,margin=0.7in]{geometry}
+
+% ---- bookkeeping macros ----
+\newcommand{\method}{\textsc{SearchCop}\xspace}
+\newcommand{\todo}[1]{\textcolor{red}{[TODO: #1]}}
+\newcommand{\note}[1]{\textcolor{blue}{[NOTE: #1]}}
+\usepackage{xspace}
+
+% =====================================================================
+\title{\method: Multi-Camera Person Search as an LLM Agent Task}
+
+\author{Anonymous CVPR submission\\
+Paper ID xxxx}
+
+\begin{document}
+\maketitle
+
+\begin{abstract}
+Multi-camera person search asks: \emph{find the same person as the query
+across a network of cameras}. The dominant pipeline today is a single-shot
+feature-matching procedure that fuses gait and re-identification (Re-ID)
+features in a fixed manner, regardless of context.
+We argue that person search is more naturally framed as a
+\emph{tool-using decision process}: which camera should be inspected first?
+which encoder is reliable for this clip? when should the system fall back
+or expand its search? We propose \method, an LLM-driven agent that calls a
+library of vision tools (gait encoder, Re-ID encoder, vision-language
+captioner, spatio-temporal filter, FAISS retriever, multi-vector reranker,
+and an evidence fuser) to answer multi-camera person-search queries.
+\method{} produces an auditable \emph{reasoning chain} alongside its Top-K
+predictions. We instantiate \method{} on the MEVID benchmark and on three
+clothing-change / video Re-ID datasets, and evaluate it under three new
+metrics in addition to standard mAP and CMC: \emph{Reasoning Faithfulness},
+\emph{Tool-call Efficiency}, and \emph{Cross-camera Recall}.
+\todo{plug in numbers from results/summary/all\_runs.xlsx after the
+experiment matrix completes}.
+\end{abstract}
+
+% =====================================================================
+\input{sections/01_introduction}
+
+% --- placeholders for next sections (will be filled D10--D13) ---
+\input{sections/02_related_work}
+\input{sections/03_method}
+\input{sections/04_experiments}
+\input{sections/05_conclusion}
+
+% =====================================================================
+\bibliographystyle{ieee_fullname}
+\bibliography{references}
+
+\end{document}
